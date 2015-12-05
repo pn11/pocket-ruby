@@ -21,8 +21,11 @@ get "/" do
 
   if session[:access_token]
     '
-<a href="/add?url=http://getpocket.com">Add Pocket Homepage</a>
-<a href="/retrieve">Retrieve single item</a>
+<ul>
+<li/><a href="/add?url=http://getpocket.com">Add Pocket Homepage</a>
+<li/><a href="/retrieve">Retrieve single item</a>
+<li/><a href="/retrieve_newest">Retrieve newest items</a>
+</ul>
     '
   else
     '<a href="/oauth/connect">Connect with Pocket</a>'
@@ -69,4 +72,38 @@ get "/retrieve" do
   # end
   # html
   "<pre>#{info}</pre>"
+end
+
+get "/retrieve_newest" do
+  count = 20
+  
+  client = Pocket.client(:access_token => session[:access_token])
+  info = client.retrieve(:detailType => :complete, :count => count)
+
+  hash = info
+#  puts hash.class
+
+  html = "<body> Newest #{count} articles in my pocket<ul>"
+  
+  hash_list = hash["list"]
+  puts "#of item is #{hash_list.size}"
+#  puts hash_list
+  
+  hash_list.each do |k, v|
+    hash_item = v
+    title = hash_item["resolved_title"]
+    url =  hash_item["resolved_url"]
+    html += "<li/> <a href=#{url}> #{title} </a>"
+    #    puts hash_item
+  end
+
+#  f = File.open("test.dat", "w")
+#  json = JSON.generate(info)
+#  puts json.class
+
+  #    "<pre>#{info}</pre>"
+
+  html += "</ul><a href=\"../\">back</a></body>"
+
+  html
 end
